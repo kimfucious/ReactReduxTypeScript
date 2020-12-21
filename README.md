@@ -4,6 +4,8 @@ This is an example of how to integrate Typescript into a React App that uses Red
 
 ## Things to note
 
+This app does not strictly follow the [offical docs](https://redux.js.org/recipes/usage-with-typescript).
+
 ### React
 
 #### Props
@@ -32,7 +34,7 @@ const App = (props: AppProps) => {...}
 
 #### State
 
-If youre not using hooks, there are two ways to use state in a class-based component.
+If you're not using hooks, there are two ways to use state in a class-based component.
 
 Option One (w/ constructor):
 
@@ -64,7 +66,7 @@ class App extends React.Component<AppProps> {
 }
 ```
 
-Note that you don't need the second argument on the component with this way.
+Note that you don't add second argument on the component with this option.
 
 ### Redux
 
