@@ -55,9 +55,7 @@ class App extends React.Component<AppProps, AppState> {
 
 Option Two (w/o constructor):
 
-Create an Interface to represent state:
-
-And state right into the component, like this:
+Add state right into the component, like this:
 
 ```js
 class App extends React.Component<AppProps, AppState> {
