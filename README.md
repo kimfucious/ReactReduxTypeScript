@@ -66,7 +66,7 @@ class App extends React.Component<AppProps> {
 }
 ```
 
-Note that you don't add second argument on the component with this option.
+Note that you don't add the second argument on the component with this option.
 
 ### Redux
 
@@ -131,13 +131,13 @@ So, for example, if you leave the payload off of the `success` dispatch and/or t
 
 #### Reducers
 
-You can create a union of `action types`, called Action, in the `types.ts` like this:
+You can create a union of `action types`, called Action, in `actins/types.ts` like this:
 
 ```js
 export type Action = GetTodosSuccess | DeleteTodosSuccess;
 ```
 
-And then use it with theActionTypes enum in a reducer like this:
+And then use it along with the ActionTypes enum in a reducer like this:
 
 ```js
 import { Action, ActionTypes } from "../actions";
@@ -156,4 +156,4 @@ export const todosReducer = (state: Todo[] = [], action: Action) => {
 };
 ```
 
-The `ActionTypes` in case statements above act as `type guards`.
+The `ActionTypes` in the switch case statements above act as `type guards`.
