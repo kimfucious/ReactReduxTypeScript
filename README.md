@@ -1,70 +1,157 @@
-# Getting Started with Create React App
+# React with Redux and Typescript
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is an example of how to integrate Typescript into a React App that uses Redux
 
-## Available Scripts
+## Things to note
 
-In the project directory, you can run:
+### React
 
-### `yarn start`
+#### Props
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+You can use an interface to define the props that a component will receive, for example:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```js
+interface AppProps {
+  todos: Todo[];
+  getTodos: Function;
+  deleteTodo: typeof Function;
+}
+```
 
-### `yarn test`
+If you're using a class-based component, you can add this as an argument, like this:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```js
+class App extends React.Component<AppProps> {...}
+```
 
-### `yarn build`
+If you're using a functional component, you can add this as an argument, like this:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```js
+const App = (props: AppProps) => {...}
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+#### State
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+If youre not using hooks, there are two ways to use state in a class-based component.
 
-### `yarn eject`
+Option One (w/ constructor):
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Create an Interface to represent state:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```js
+interface AppState {
+  isSpinning: boolean;
+}
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+And add this as a second argument to the component, like this:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+```js
+class App extends React.Component<AppProps, AppState> {
+ this.state = {isSpinning: false}
+ ...
+ }
+```
 
-## Learn More
+Option Two (w/o constructor):
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Create an Interface to represent state:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+And state right into the component, like this:
 
-### Code Splitting
+```js
+class App extends React.Component<AppProps, AppState> {
+  state = { isSpinning: false };
+  ...
+}
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Redux
 
-### Analyzing the Bundle Size
+#### Actions
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+You can use Typescript `enums` to control Redux action types.
 
-### Making a Progressive Web App
+So with something like this:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```js
+enum ActionTypes {
+  GET_TODOS_START,
+  GET_TODOS_SUCCESS,
+  GET_TODOS_FAIL
+}
+```
 
-### Advanced Configuration
+You can do something like this in your action creators (note the `ActionTypes`):
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```js
+...
+import { ActionTypes } from "./types";
 
-### Deployment
+interface GetTodosStart {
+  type: ActionTypes.GET_TODOS_START;
+}
+interface GetTodosSuccess {
+  type: ActionTypes.GET_TODOS_SUCCESS;
+  payload: Todo[];
+}
+interface GetTodosFail {
+  type: ActionTypes.GET_TODOS_FAIL;
+  payload: Error;
+}
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+export const getTodos = () => async (dispatch: Dispatch) => {
+  try {
+    dispatch<GetTodosStart>({ type: ActionTypes.GET_TODOS_START });
+    const { data } = await axios.get<Todo[]>(
+      "https://jsonplaceholder.typicode.com/todos"
+    );
+    dispatch<GetTodosSuccess>({
+      type: ActionTypes.GET_TODOS_SUCCESS,
+      payload: data
+    });
+    return Promise.resolve(data);
+  } catch (error) {
+    console.warn(error);
+    dispatch<GetTodosFail>({
+      type: ActionTypes.GET_TODOS_FAIL,
+      payload: error
+    });
+    return Promise.reject(error);
+  }
+};
+...
+```
 
-### `yarn build` fails to minify
+In the above, you can see that `dispatch`, a generic function, is being provided with arguments: `GetTodosStart`, `GetTodosSuccess`, and `GetTodosFail`. These are interfaces used to ensure that the signature of the dispatch is correct for the given scenario.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+So, for example, if you leave the payload off of the `success` dispatch and/or the payload is of the wrong type, TypeScript will tell you. The same goes for `fail`.
+
+#### Reducers
+
+You can create a union of `action types`, called Action, in the `types.ts` like this:
+
+```js
+export type Action = GetTodosSuccess | DeleteTodosSuccess;
+```
+
+And then use it with theActionTypes enum in a reducer like this:
+
+```js
+import { Action, ActionTypes } from "../actions";
+
+import { Todo } from "../interfaces";
+
+export const todosReducer = (state: Todo[] = [], action: Action) => {
+  switch (action.type) {
+    case ActionTypes.GET_TODOS_SUCCESS:
+      return action.payload;
+    case ActionTypes.DELETE_TODO_SUCCESS:
+      return state.filter((item: Todo) => item.id !== action.payload);
+    default:
+      return state;
+  }
+};
+```
+
+The `ActionTypes` in case statements above act as `type guards`.
