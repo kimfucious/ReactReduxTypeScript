@@ -58,11 +58,13 @@ Option Two (w/o constructor):
 Add state right into the component, like this:
 
 ```js
-class App extends React.Component<AppProps, AppState> {
+class App extends React.Component<AppProps> {
   state = { isSpinning: false };
   ...
 }
 ```
+
+Note that you don't need the second argument on the component with this way.
 
 ### Redux
 
